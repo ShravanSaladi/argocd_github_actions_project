@@ -49,7 +49,7 @@ jobs:
           - name: commit and push file to github repository
             uses: devops-infra/action-commit-push@v1.5.0
             with:
-              github_token: ${{ secrets.TOKEN }}
+              github_token: ${{secrets.TOKEN}}
               commit_message: "Update deployment image to version ${{github.run_number}}"
               branch: main
           
