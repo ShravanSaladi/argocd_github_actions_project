@@ -46,12 +46,13 @@ jobs:
               echo "Updated deployment manifest file"
               cat deploymentfiles/deployment.yml
 
-          - name: commit and push file to github repository
-            uses: devops-infra/action-commit-push@v1.5.0
+          - name: Commit and Push Deployment File
+            uses: stefanzweifel/git-auto-commit-action@v5
             with:
-              github_token: ${{secrets.TOKEN}}
-              commit_message: "Update deployment image to version ${{github.run_number}}"
-              branch: main
+                commit_message: "Update deployment image to version ${{ github.run_number }}"
+                branch: main
+
+         
           
         
   
