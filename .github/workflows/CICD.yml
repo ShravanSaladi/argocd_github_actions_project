@@ -1,0 +1,56 @@
+name: cicd-arcd
+on:
+  push:
+        branches:
+          -  main
+  workflow_dispatch:
+
+jobs:
+  build:
+        runs-on: ubuntu-latest
+        env:
+            REGISTRY: docker.io
+            IMAGE_NAME: shravansaladi/argocd
+
+        steps:
+          - name: checkout code
+            uses: actions/checkout@v4
+            
+          - name: List files
+            run: |
+                 ls -lart
+
+          - name: build artifact using Maven
+            run: mvn clean package
+
+          - name: setup docker
+            uses: docker/setup-buildx-action@v4
+
+          - name: docker login
+            uses: docker/login-action@v3
+            with:
+              username: ${{secrets.docker_name}}
+              password: ${{secrets.docker_password}}
+
+          - name: build and push 
+            uses: docker/build-push-action@v7
+            with:
+              context: .
+              push: true
+              tags: ${{env.IMAGE_NAME}}:${{github.run_number}}
+
+          - name: Update deployment manifest file
+            run: |
+              echo "Updating kubernetes deployment manifest file in GIT repository"
+              sed -i "s|${IMAGE_NAME}:*|${IMAGE_NAME:{github.run_number}}|g" deploymentfiles/deployment.yml
+              echo "Updated deployment manifest file"
+              cat deploymentfiles/deployment.yml
+
+          - name: commit and push file to github repository
+            uses: devops-infra/action-commit-push@v1.5.0
+            with:
+              commit_message: "Update deployment image to version ${{github.run_number}}"
+              branch: main
+          
+        
+  
